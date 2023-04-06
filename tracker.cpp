@@ -4,10 +4,15 @@
 #include <string>
 #include <sstream>
 #include <sys/statvfs.h>
+#include <sys/types.h>
 #include <ifaddrs.h>
+#include <net/if.h>
 #include <netinet/in.h>
-#include <linux/if.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include <cstring>
+
+
 
 using namespace std;
 
@@ -25,9 +30,6 @@ struct cpu_stat{
     unsigned int guest_nice;
 };
 
-struct temp_stat{
-
-};
 
 void Reading_CPU(ofstream & saving_data)
 {
@@ -171,10 +173,11 @@ void Reading_NetworkDevice(ofstream & saving_data)
 {
     struct ifaddrs *ifap, *ifa;
     struct sockaddr_in *sa;
+    struct if_data *ifd;
     char *addr;
 
     if (getifaddrs(&ifap) == -1) {
-        std::cerr << "Error getting network interfaces." << std::endl;
+        cout << "Error getting network interfaces." << endl;
     }
     else
     {
@@ -183,18 +186,33 @@ void Reading_NetworkDevice(ofstream & saving_data)
             if (ifa->ifa_addr == NULL) continue;
 
             if (ifa->ifa_addr->sa_family == AF_INET) 
-            {
+            {   
+                // Get ips, statuses
                 sa = (struct sockaddr_in *) ifa->ifa_addr;
                 addr = inet_ntoa(sa->sin_addr);
-                std::cout << "Interface: " << ifa->ifa_name
-                      << ", IP address: " << addr
-                      << ", Status: " << (ifa->ifa_flags & IFF_UP ? "UP" : "DOWN")
-                      << std::endl;
+                //cout << "Interface: " << ifa->ifa_name << ", IP address: " << addr 
+                //     << ", Status: " << (ifa->ifa_flags & IFF_UP ? "UP" : "DOWN") << endl;
 
-                saving_data << ifa->ifa_name << "   " << addr << "  " << (ifa->ifa_flags & IFF_UP ? "UP" : "DOWN") << "\n";
+                saving_data << ifa->ifa_name << "   " << addr << "  " << (ifa->ifa_flags & IFF_UP ? "UP" : "DOWN");
+
+                 // Get network statistics, there is no structure if_data in file, when it should be
+                ifd = (struct if_data*)ifa->ifa_data;
+                if (ifd != NULL) 
+                {
+                    // cout << ", Sent: " << ifd->ifi_obytes
+                    //      << ", Received: " << ifd->ifi_ibytes <<endl;
+                    
+                    //saving_data << ", Sent: " << ifd->ifi_obytes
+                    //            << ", Received: " << ifd->ifi_ibytes;
+                }
+                else
+                {
+                    saving_data << ", Sent: " << 0
+                                << ", Received: " << 0;
+                }
+                saving_data << "\n";
             }
         }
-
     freeifaddrs(ifap);
     }
     
@@ -203,24 +221,30 @@ void Reading_NetworkDevice(ofstream & saving_data)
 int main(){
 
     ofstream saving_data;
-    saving_data.open ("system_data_readings.txt");
+    while(1)
+    {   
+        cout << "petla" << endl;
+        ofstream saving_data;
+        saving_data.open ("system_data_readings.txt");
 
-    Reading_CPU(saving_data);
-    saving_data << "\n";
+        Reading_CPU(saving_data);
+        saving_data << "\n";
 
-    Reading_Temp(saving_data);
-    saving_data << "\n";
+        Reading_Temp(saving_data);
+        saving_data << "\n";
 
-    Reading_RAM(saving_data);
-    saving_data << "\n";
+        Reading_RAM(saving_data);
+        saving_data << "\n";
 
-    Reading_FreeDiscSpace(saving_data);
-    saving_data << "\n";
+        Reading_FreeDiscSpace(saving_data);
+        saving_data << "\n";
 
-    Reading_NetworkDevice(saving_data);
-    saving_data << "\n";
+        Reading_NetworkDevice(saving_data);
 
-    saving_data.close();
+        saving_data.close();
+
+        sleep(60);
+    }
 
     return 0;
 }
