@@ -122,9 +122,29 @@ void Reading_TEMP(ofstream & saving_data)
     
 }
 
+
 void Reading_RAM(ofstream & saving_data)
 {
+    string data;
 
+    ifstream reading_data;
+    string directory = "/proc/meminfo";
+
+    reading_data.open(directory);
+    
+    //MemTotal: 
+    getline(reading_data, data);
+    saving_data << data << "\n";
+
+    //MemFree:
+    getline(reading_data, data);
+    saving_data << data << "\n";
+
+    //MemAvailable:
+    getline(reading_data, data);
+    saving_data << data << "\n";
+
+    reading_data.close();
 }
 
 int main(){
@@ -135,7 +155,7 @@ int main(){
     Reading_CPU(saving_data);
     Reading_TEMP(saving_data);
     Reading_RAM(saving_data);
-
+    
     saving_data.close();
 
     return 0;
