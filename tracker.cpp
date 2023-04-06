@@ -4,7 +4,10 @@
 #include <string>
 #include <sstream>
 #include <sys/statvfs.h>
-
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <linux/if.h>
+#include <arpa/inet.h>
 
 using namespace std;
 
@@ -83,7 +86,7 @@ void Reading_CPU(ofstream & saving_data)
 }
 
 
-void Reading_TEMP(ofstream & saving_data)
+void Reading_Temp(ofstream & saving_data)
 {
     string data;
     double numeric_data;
@@ -148,7 +151,7 @@ void Reading_RAM(ofstream & saving_data)
 }
 
 
-void Reading_DISC(ofstream & saving_data)
+void  Reading_FreeDiscSpace(ofstream & saving_data)
 {
     struct statvfs stat;
     if (statvfs("/", &stat) != 0) {
@@ -164,17 +167,58 @@ void Reading_DISC(ofstream & saving_data)
 }
 
 
+void Reading_NetworkDevice(ofstream & saving_data)
+{
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    char *addr;
+
+    if (getifaddrs(&ifap) == -1) {
+        std::cerr << "Error getting network interfaces." << std::endl;
+    }
+    else
+    {
+        for (ifa = ifap; ifa != NULL; ifa = ifa->ifa_next)
+        {
+            if (ifa->ifa_addr == NULL) continue;
+
+            if (ifa->ifa_addr->sa_family == AF_INET) 
+            {
+                sa = (struct sockaddr_in *) ifa->ifa_addr;
+                addr = inet_ntoa(sa->sin_addr);
+                std::cout << "Interface: " << ifa->ifa_name
+                      << ", IP address: " << addr
+                      << ", Status: " << (ifa->ifa_flags & IFF_UP ? "UP" : "DOWN")
+                      << std::endl;
+
+                saving_data << ifa->ifa_name << "   " << addr << "  " << (ifa->ifa_flags & IFF_UP ? "UP" : "DOWN") << "\n";
+            }
+        }
+
+    freeifaddrs(ifap);
+    }
+    
+}
+
 int main(){
 
     ofstream saving_data;
     saving_data.open ("system_data_readings.txt");
 
     Reading_CPU(saving_data);
-    Reading_TEMP(saving_data);
-    Reading_RAM(saving_data);
-    Reading_DISC(saving_data);
+    saving_data << "\n";
 
-    
+    Reading_Temp(saving_data);
+    saving_data << "\n";
+
+    Reading_RAM(saving_data);
+    saving_data << "\n";
+
+    Reading_FreeDiscSpace(saving_data);
+    saving_data << "\n";
+
+    Reading_NetworkDevice(saving_data);
+    saving_data << "\n";
 
     saving_data.close();
 
