@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string>
 #include <sstream>
-#include <vector>
+#include <sys/statvfs.h>
 
 
 using namespace std;
@@ -147,6 +147,23 @@ void Reading_RAM(ofstream & saving_data)
     reading_data.close();
 }
 
+
+void Reading_DISC(ofstream & saving_data)
+{
+    struct statvfs stat;
+    if (statvfs("/", &stat) != 0) {
+        cout << "Error: unable to retrieve file system statistics" << endl;
+    }
+    else
+    {
+        unsigned long long free_space = stat.f_bavail * stat.f_frsize;
+        //cout << "FreeDiscSpace: " << free_space/1000.0 << " kb\n";
+        saving_data << "FreeDiscSpace:    " << free_space/1000.0 << " kb\n";
+    }
+    
+}
+
+
 int main(){
 
     ofstream saving_data;
@@ -155,7 +172,10 @@ int main(){
     Reading_CPU(saving_data);
     Reading_TEMP(saving_data);
     Reading_RAM(saving_data);
+    Reading_DISC(saving_data);
+
     
+
     saving_data.close();
 
     return 0;
