@@ -223,9 +223,8 @@ int main(){
     ofstream saving_data;
     while(1)
     {   
-        cout << "petla" << endl;
         ofstream saving_data;
-        saving_data.open ("system_data_readings.txt");
+        saving_data.open ("/home/nikodem/system_data_readings.txt");    //change the directory wher data will be saved
 
         Reading_CPU(saving_data);
         saving_data << "\n";

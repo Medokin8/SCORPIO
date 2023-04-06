@@ -1,0 +1,12 @@
+1.  Move the script start_tracker.sh and file tracker.exe to the system's startup directory. 
+    On Ubuntu it's /etc/init.d.
+
+2.  Add the script to the system's startup sequence with the update-rc.d command.
+    For Ubuntu, it's: sudo update-rc.d start_tracker.sh defaults
+
+NOTE:
+  !!!  Befor running the program you should chage the directory of saving file, because the one after download is /home/nikodem/   !!!
+
+Info:
+        start_tracker.sh just run prebuild tracker.exe in background (& option).
+        make_tracker.sh rm old version of tracker.exe an compile tracker.cpp as tracker.exe
