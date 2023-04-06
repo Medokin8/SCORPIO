@@ -24,3 +24,6 @@ NOTE:
   !!!  Befor running the program you should chage the directory of saving file, because the one after download is /home/nikodem/   !!!
   Saving values of Sended and Received bytes by network device is not working properly (always writes to both 0 values).
   It is because of some problem with missing structure if_data and ifd->ifi_obytes, ifd->ifi_ibytes.
+
+
+link to github repository:  https://github.com/Medokin8/SCORPIO
